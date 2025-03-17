@@ -5,9 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>寻找云朵答题系统</title>
-+ <!-- LeanCloud SDK -->
-+ <script src="//cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
-
+    <!-- LeanCloud SDK -->
+    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -211,7 +210,6 @@
             }
         }
 
-        /* 管理员按钮样式 */
         #adminBtn {
             position: fixed;
             bottom: 20px;
@@ -252,15 +250,14 @@
     <button id="adminBtn">管理员查看</button>
 
     <script>
-// 初始化LeanCloud
-AV.init({ 
-  appId: "8feDlZ4ViAFNzKao1KE2kPc6-MdYXbMMI",      // 替换你的App ID
-  appKey: "2GvHHWkl1F01oQq6Wr1k4gqO",    // 替换你的App Key
-  serverURL: "https://8fedlz4v.api.lncldglobal.com" // 替换你的REST API地址
-});
+        // ============== LeanCloud初始化（已配置你的凭证）==============
+        AV.init({ 
+            appId: "8feDlZ4ViAFNzKao1KE2kPc6-MdYXbMMI",
+            appKey: "2GvHHWkl1F01oQq6Wr1k4gqO",
+            serverURL: "https://8fedlz4v.api.lncldglobal.com"
+        });
 
-
-        // 原程序逻辑
+        // ============== 原程序逻辑 ==============
         let nickname;
         const startButton = document.getElementById('start');
         const nicknameInput = document.getElementById('nickname');
@@ -372,54 +369,54 @@ AV.init({
             saveResult(nickname, cloudCount);
         }
 
+        // ============== LeanCloud保存功能 ==============
         async function saveResult(nickname, cloudCount) {
-  try {
-    // 创建数据对象
-    const TestResult = AV.Object.extend('TestResult');
-    const result = new TestResult();
-    
-    // 设置字段值
-    result.set('nickname', nickname);
-    result.set('score', cloudCount);
-    result.set('timestamp', new Date());
+            try {
+                const TestResult = AV.Object.extend('TestResult');
+                const result = new TestResult();
+                await result.save({
+                    nickname: nickname,
+                    score: cloudCount,
+                    timestamp: new Date()
+                });
+            } catch (error) {
+                console.error("保存失败:", error);
+                alert('成绩保存失败，请检查网络');
+            }
+        }
 
-    // 保存到云端
-    await result.save();
-  } catch (error) {
-    console.error("保存失败:", error);
-    alert('保存成绩失败，请检查网络连接');
-  }
-}
+        // ============== 管理员功能 ==============
+        document.getElementById('adminBtn').addEventListener('click', async () => {
+            const password = prompt('请输入管理员密码:');
+            if (password !== 'admin123') return alert('密码错误');
 
+            try {
+                const query = new AV.Query('TestResult');
+                query.descending('timestamp');
+                query.limit(50);
+                const results = await query.find();
 
-document.getElementById('adminBtn').addEventListener('click', async () => {
-  const password = prompt('请输入管理员密码:');
-  if (password !== 'admin123') return alert('密码错误');
+                let resultText = '最近50条记录：\n\n';
+                results.forEach(item => {
+                    const date = new Date(item.get('timestamp')).toLocaleString('zh-CN');
+                    resultText += `[${date}] ${item.get('nickname')} - ${item.get('score')}朵云\n`;
+                });
 
-  try {
-    // 创建查询
-    const query = new AV.Query('TestResult');
-    query.descending('timestamp'); // 按时间倒序
-    query.limit(50); // 限制50条
-    
-    // 执行查询
-    const results = await query.find();
+                alert(resultText);
+            } catch (error) {
+                console.error("读取失败:", error);
+                alert('获取数据失败');
+            }
+        });
 
-    // 构造显示文本
-    let resultText = '最近50条记录：\n\n';
-    results.forEach(item => {
-      const date = item.get('timestamp').toLocaleString('zh-CN');
-      resultText += `[${date}] ${item.get('nickname')} - ${item.get('score')}朵云\n`;
-    });
-
-    // 显示结果
-    alert(resultText);
-  } catch (error) {
-    console.error("读取失败:", error);
-    alert('获取数据失败，请稍后重试');
-  }
-});
-
+        // ============== 时间显示补丁 ==============
+        Date.prototype.toLocaleString = function() {
+            return this.getFullYear() + '-' +
+                (this.getMonth()+1).toString().padStart(2,'0') + '-' +
+                this.getDate().toString().padStart(2,'0') + ' ' +
+                this.getHours().toString().padStart(2,'0') + ':' +
+                this.getMinutes().toString().padStart(2,'0');
+        };
     </script>
 </body>
 </html>
