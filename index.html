@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>寻找云朵答题系统</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -207,10 +210,22 @@
                 left: 100%;
             }
         }
+
+        /* 管理员按钮样式 */
+        #adminBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #2a9d8f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 9999;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
     </style>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-    
 </head>
 
 <body>
@@ -233,29 +248,24 @@
         <h2>恭喜完成答题！</h2>
         <p id="final-score-text"></p>
     </div>
+
+    <button id="adminBtn">管理员查看</button>
+
     <script>
-        // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+        // 初始化 Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCaXYVNCNu6pB_ruywbZdVjK3N7LiQPO5g",
+            authDomain: "cloud-quiz-b38eb.firebaseapp.com",
+            projectId: "cloud-quiz-b38eb",
+            storageBucket: "cloud-quiz-b38eb.firebasestorage.app",
+            messagingSenderId: "635112483611",
+            appId: "1:635112483611:web:e81714a8e1e0e67e5e41be",
+            measurementId: "G-67L9HL4ZB2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyCaXYVNCNu6pB_ruywbZdVjK3N7LiQPO5g",
-  authDomain: "cloud-quiz-b38eb.firebaseapp.com",
-  projectId: "cloud-quiz-b38eb",
-  storageBucket: "cloud-quiz-b38eb.firebasestorage.app",
-  messagingSenderId: "635112483611",
-  appId: "1:635112483611:web:e81714a8e1e0e67e5e41be",
-  measurementId: "G-67L9HL4ZB2"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-        
+        // 原程序逻辑
         let nickname;
         const startButton = document.getElementById('start');
         const nicknameInput = document.getElementById('nickname');
@@ -367,63 +377,43 @@ const analytics = getAnalytics(app);
             saveResult(nickname, cloudCount);
         }
 
-// 替换原有saveResult函数
-async function saveResult(nickname, cloudCount) {
-    try {
-        await db.collection("results").add({
-            nickname: nickname,
-            score: cloudCount,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        console.log("数据保存成功");
-    } catch (error) {
-        console.error("保存失败:", error);
-        alert('保存成绩时出错，请检查网络连接');
-    }
-}
-<!-- 添加在</body>之前 -->
-<button id="adminBtn" style="
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 10px;
-    background: #2a9d8f;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    z-index: 9999;">
-    管理员查看
-</button>
-
-<script>
-    // 管理员功能
-    document.getElementById('adminBtn').addEventListener('click', async () => {
-        const password = prompt('请输入管理员密码:');
-        if(password !== 'admin123') return alert('密码错误');
-        
-        try {
-            const snapshot = await db.collection("results")
-                .orderBy("timestamp", "desc")
-                .limit(50)
-                .get();
-                
-            let resultText = '最近50条记录：\n\n';
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                resultText += `${data.nickname} - ${data.score}云朵 (${new Date(data.timestamp?.toDate()).toLocaleString()})\n`;
-            });
-            
-            alert(resultText);
-        } catch (error) {
-            console.error("读取失败:", error);
-            alert('获取数据失败');
+        // 保存到Firebase
+        async function saveResult(nickname, cloudCount) {
+            try {
+                await db.collection("results").add({
+                    nickname: nickname,
+                    score: cloudCount,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            } catch (error) {
+                console.error("保存失败:", error);
+            }
         }
-    });
-</script>
-</body>
 
+        // 管理员功能
+        document.getElementById('adminBtn').addEventListener('click', async () => {
+            const password = prompt('请输入管理员密码:');
+            if (password !== 'admin123') return alert('密码错误');
+
+            try {
+                const snapshot = await db.collection("results")
+                    .orderBy("timestamp", "desc")
+                    .limit(50)
+                    .get();
+
+                let resultText = '最近50条记录：\n\n';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.timestamp?.toDate().toLocaleString('zh-CN');
+                    resultText += `[${date}] ${data.nickname} - ${data.score}朵云\n`;
+                });
+
+                alert(resultText);
+            } catch (error) {
+                console.error("读取失败:", error);
+                alert('获取数据失败');
+            }
+        });
     </script>
 </body>
-
-</html>    
+</html>
