@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寻找云朵答题系统</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #87CEEB;
+            color: #333;
+            padding: 20px;
+            text-align: center;
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 2;
+        }
+
+        #nickname-container {
+            margin: 20px auto;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 400px;
+            position: relative;
+            z-index: 2;
+        }
+
+        #nickname-container label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        #nickname-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        #nickname-container button {
+            padding: 10px 20px;
+            background-color: #264653;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #nickname-container button:hover {
+            background-color: #1b323a;
+        }
+
+        #question-container {
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+            display: none;
+            position: relative;
+            z-index: 2;
+        }
+
+        #question {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        #options {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+        }
+
+        #options li {
+            margin: 10px 0;
+        }
+
+        #options li input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        #submit {
+            padding: 10px 20px;
+            background-color: #2a9d8f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        #submit:hover {
+            background-color: #228175;
+        }
+
+        #exit {
+            padding: 10px 20px;
+            background-color: #e76f51;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+            margin-left: 10px;
+        }
+
+        #exit:hover {
+            background-color: #d65537;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        #cloud-count {
+            margin-top: 10px;
+            font-size: 1.2em;
+            position: relative;
+            z-index: 2;
+        }
+
+        #final-score-page {
+            display: none;
+            margin-top: 50px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+            margin: 50px auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        #final-score-page h2 {
+            color: #2a9d8f;
+            font-size: 2em;
+        }
+
+        #final-score-page p {
+            font-size: 1.5em;
+        }
+
+        .cloud {
+            width: 200px;
+            height: 60px;
+            background: #fff;
+            border-radius: 200px;
+            position: absolute;
+            animation: moveCloud 20s linear infinite;
+            z-index: 1;
+        }
+
+        .cloud::before,
+        .cloud::after {
+            content: '';
+            position: absolute;
+            background: #fff;
+            width: 100px;
+            height: 80px;
+            top: -15px;
+            left: 10px;
+            border-radius: 100px;
+            transform: rotate(30deg);
+        }
+
+        .cloud::after {
+            width: 120px;
+            height: 120px;
+            top: -55px;
+            left: auto;
+            right: 15px;
+        }
+
+        @keyframes moveCloud {
+            0% {
+                left: -200px;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>寻找云朵</h1>
+    <div id="nickname-container">
+        <label for="nickname">请输入你的昵称：</label>
+        <input type="text" id="nickname">
+        <button id="start">开始答题</button>
+        <p>现在天上没有云朵，你需要通过回答问题来获得云朵哦！</p>
+    </div>
+    <div id="question-container">
+        <div id="question"></div>
+        <ul id="options"></ul>
+        <button id="submit">提交答案</button>
+        <button id="exit">退出答题</button>
+    </div>
+    <div id="result"></div>
+    <div id="cloud-count">当前获得云朵数量: 0</div>
+    <div id="final-score-page">
+        <h2>恭喜完成答题！</h2>
+        <p id="final-score-text"></p>
+    </div>
+    <script>
+        let nickname;
+        const startButton = document.getElementById('start');
+        const nicknameInput = document.getElementById('nickname');
+        const questionContainer = document.getElementById('question-container');
+        const nicknameContainer = document.getElementById('nickname-container');
+
+        startButton.addEventListener('click', () => {
+            nickname = nicknameInput.value;
+            if (nickname) {
+                nicknameContainer.style.display = 'none';
+                questionContainer.style.display = 'block';
+                displayQuestion();
+            } else {
+                alert('请输入昵称！');
+            }
+        });
+
+        function generateQuestion() {
+            const num1 = Math.floor(Math.random() * 90) + 10;
+            const num2 = Math.floor(Math.random() * 90) + 10;
+            const operator = Math.random() < 0.5 ? '+' : '-';
+            const correctAnswer = operator === '+' ? num1 + num2 : num1 - num2;
+            const options = [correctAnswer];
+            while (options.length < 4) {
+                const randomOption = Math.floor(Math.random() * 200) - 50;
+                if (!options.includes(randomOption)) {
+                    options.push(randomOption);
+                }
+            }
+            options.sort(() => Math.random() - 0.5);
+            return {
+                question: `${num1} ${operator} ${num2} = ?`,
+                options: options,
+                answer: options.indexOf(correctAnswer)
+            };
+        }
+
+        const questions = Array.from({ length: 30 }, generateQuestion);
+        let currentQuestionIndex = 0;
+        let cloudCount = 0;
+        const questionElement = document.getElementById('question');
+        const optionsElement = document.getElementById('options');
+        const submitButton = document.getElementById('submit');
+        const exitButton = document.getElementById('exit');
+        const resultElement = document.getElementById('result');
+        const cloudCountElement = document.getElementById('cloud-count');
+        const finalScorePage = document.getElementById('final-score-page');
+        const finalScoreText = document.getElementById('final-score-text');
+
+        function displayQuestion() {
+            const currentQuestion = questions[currentQuestionIndex];
+            questionElement.textContent = currentQuestion.question;
+            optionsElement.innerHTML = '';
+            currentQuestion.options.forEach((option, index) => {
+                const li = document.createElement('li');
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.name = 'answer';
+                input.value = index;
+                const label = document.createElement('label');
+                label.textContent = option;
+                li.appendChild(input);
+                li.appendChild(label);
+                optionsElement.appendChild(li);
+            });
+            resultElement.textContent = '';
+        }
+
+        submitButton.addEventListener('click', () => {
+            const selectedOption = document.querySelector('input[name="answer"]:checked');
+            if (selectedOption) {
+                const userAnswer = parseInt(selectedOption.value);
+                const currentQuestion = questions[currentQuestionIndex];
+                if (userAnswer === currentQuestion.answer) {
+                    resultElement.textContent = '回答正确！';
+                    cloudCount++;
+                    const cloud = document.createElement('div');
+                    cloud.classList.add('cloud');
+                    cloud.style.top = Math.random() * (window.innerHeight - 60) + 'px';
+                    cloud.style.animationDuration = Math.random() * 10 + 15 + 's';
+                    document.body.appendChild(cloud);
+                } else {
+                    resultElement.textContent = '回答错误！正确答案是：' + currentQuestion.options[currentQuestion.answer];
+                }
+                cloudCountElement.textContent = `当前获得云朵数量: ${cloudCount}`;
+                currentQuestionIndex++;
+                if (currentQuestionIndex < questions.length) {
+                    setTimeout(() => {
+                        displayQuestion();
+                    }, 1500);
+                } else {
+                    endQuiz();
+                }
+            } else {
+                resultElement.textContent = '请选择一个答案！';
+            }
+        });
+
+        exitButton.addEventListener('click', () => {
+            endQuiz();
+        });
+
+        function endQuiz() {
+            document.getElementById('question-container').style.display = 'none';
+            resultElement.style.display = 'none';
+            cloudCountElement.style.display = 'none';
+            finalScorePage.style.display = 'block';
+            finalScoreText.textContent = `${nickname}，你最终获得了 ${cloudCount} 朵云朵！`;
+            saveResult(nickname, cloudCount);
+        }
+
+        function saveResult(nickname, cloudCount) {
+            const results = JSON.parse(localStorage.getItem('quizResults')) || [];
+            results.push({ nickname, cloudCount });
+            localStorage.setItem('quizResults', JSON.stringify(results));
+        }
+    </script>
+</body>
+
+</html>    
