@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html lang="en">
+  
 // 临时解决方案：在代码开头添加代理设置（仅用于测试）
 AV.Cloud.useMasterKey(false);
 AV.Cloud.setProduction(true); 
@@ -9,10 +12,7 @@ AV._ajax = function() {
   args.headers['Access-Control-Allow-Origin'] = '*';
   return originalAjax.apply(this, arguments);
 };
-
-<!DOCTYPE html>
-<html lang="en">
-
+  
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
