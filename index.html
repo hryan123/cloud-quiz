@@ -1,52 +1,12 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>寻找云朵答题系统</title>
-    
-    <!-- Firebase SDK v11 -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            serverTimestamp,
-            query,
-            orderBy,
-            limit,
-            getDocs 
-        } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-
-        // Firebase配置
-        const firebaseConfig = {
-            apiKey: "AIzaSyCaXYVNCNu6pB_ruywbZdVjK3N7LiQPO5g",
-            authDomain: "cloud-quiz-b38eb.firebaseapp.com",
-            projectId: "cloud-quiz-b38eb",
-            storageBucket: "cloud-quiz-b38eb.firebasestorage.app",
-            messagingSenderId: "635112483611",
-            appId: "1:635112483611:web:e81714a8e1e0e67e5e41be",
-            measurementId: "G-67L9HL4ZB2"
-        };
-
-        // 初始化Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // 暴露必要方法到全局
-        window.firebaseApp = {
-            db,
-            collection,
-            addDoc,
-            serverTimestamp,
-            query,
-            orderBy,
-            limit,
-            getDocs
-        };
-    </script>
++ <!-- LeanCloud SDK -->
++ <script src="//cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
 
     <style>
         body {
@@ -251,6 +211,7 @@
             }
         }
 
+        /* 管理员按钮样式 */
         #adminBtn {
             position: fixed;
             bottom: 20px;
@@ -291,7 +252,15 @@
     <button id="adminBtn">管理员查看</button>
 
     <script>
-        // 程序主逻辑
+// 初始化LeanCloud
+AV.init({ 
+  appId: "8feDlZ4ViAFNzKao1KE2kPc6-MdYXbMMI",      // 替换你的App ID
+  appKey: "2GvHHWkl1F01oQq6Wr1k4gqO",    // 替换你的App Key
+  serverURL: "https://8fedlz4v.api.lncldglobal.com" // 替换你的REST API地址
+});
+
+
+        // 原程序逻辑
         let nickname;
         const startButton = document.getElementById('start');
         const nicknameInput = document.getElementById('nickname');
@@ -360,7 +329,7 @@
             resultElement.textContent = '';
         }
 
-        submitButton.addEventListener('click', async () => {
+        submitButton.addEventListener('click', () => {
             const selectedOption = document.querySelector('input[name="answer"]:checked');
             if (selectedOption) {
                 const userAnswer = parseInt(selectedOption.value);
@@ -394,59 +363,63 @@
             endQuiz();
         });
 
-        async function endQuiz() {
+        function endQuiz() {
             document.getElementById('question-container').style.display = 'none';
             resultElement.style.display = 'none';
             cloudCountElement.style.display = 'none';
             finalScorePage.style.display = 'block';
             finalScoreText.textContent = `${nickname}，你最终获得了 ${cloudCount} 朵云朵！`;
-            await saveResult(nickname, cloudCount);
+            saveResult(nickname, cloudCount);
         }
 
-        // 新版保存方法
         async function saveResult(nickname, cloudCount) {
-            try {
-                await firebaseApp.addDoc(
-                    firebaseApp.collection(firebaseApp.db, "results"), 
-                    {
-                        nickname,
-                        score: cloudCount,
-                        timestamp: firebaseApp.serverTimestamp()
-                    }
-                );
-            } catch (error) {
-                console.error("保存失败:", error);
-                alert('成绩保存失败，请检查网络连接');
-            }
-        }
+  try {
+    // 创建数据对象
+    const TestResult = AV.Object.extend('TestResult');
+    const result = new TestResult();
+    
+    // 设置字段值
+    result.set('nickname', nickname);
+    result.set('score', cloudCount);
+    result.set('timestamp', new Date());
 
-        // 管理员功能
-        document.getElementById('adminBtn').addEventListener('click', async () => {
-            const password = prompt('请输入管理员密码:');
-            if (password !== 'admin123') return alert('密码错误');
+    // 保存到云端
+    await result.save();
+  } catch (error) {
+    console.error("保存失败:", error);
+    alert('保存成绩失败，请检查网络连接');
+  }
+}
 
-            try {
-                const q = firebaseApp.query(
-                    firebaseApp.collection(firebaseApp.db, "results"),
-                    firebaseApp.orderBy("timestamp", "desc"),
-                    firebaseApp.limit(50)
-                );
 
-                const querySnapshot = await firebaseApp.getDocs(q);
-                
-                let resultText = '最近50条记录：\n\n';
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const date = data.timestamp?.toDate().toLocaleString('zh-CN');
-                    resultText += `[${date}] ${data.nickname} - ${data.score}朵云\n`;
-                });
+document.getElementById('adminBtn').addEventListener('click', async () => {
+  const password = prompt('请输入管理员密码:');
+  if (password !== 'admin123') return alert('密码错误');
 
-                alert(resultText || '暂无记录');
-            } catch (error) {
-                console.error("读取失败:", error);
-                alert('获取数据失败');
-            }
-        });
+  try {
+    // 创建查询
+    const query = new AV.Query('TestResult');
+    query.descending('timestamp'); // 按时间倒序
+    query.limit(50); // 限制50条
+    
+    // 执行查询
+    const results = await query.find();
+
+    // 构造显示文本
+    let resultText = '最近50条记录：\n\n';
+    results.forEach(item => {
+      const date = item.get('timestamp').toLocaleString('zh-CN');
+      resultText += `[${date}] ${item.get('nickname')} - ${item.get('score')}朵云\n`;
+    });
+
+    // 显示结果
+    alert(resultText);
+  } catch (error) {
+    console.error("读取失败:", error);
+    alert('获取数据失败，请稍后重试');
+  }
+});
+
     </script>
 </body>
 </html>
