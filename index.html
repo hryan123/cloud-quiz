@@ -647,7 +647,7 @@
             try {
                 await result.save({
                     birthday: userBirthday,
-                    energy: score,
+                    energy: score/10,
                     timestamp: new Date()
                 });
                 console.log('数据保存成功');
