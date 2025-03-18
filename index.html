@@ -321,7 +321,7 @@
                     <div class="score-container">
                         <p>当前得分: <span id="score">0</span>g 绿色能量</p>
                     </div>
-                    <button class="exit-btn" id="exit-btn">退出答题</button>
+                    <button class="exit-btn" id="exit-btn">完成答题</button>
                 </div>
             </div>
         </div>
@@ -658,7 +658,6 @@
 
         // 修改后的最终结果展示函数
         async function showFinalResult() {
-            await saveToLeanCloud();  // 先保存数据
             document.getElementById('energy-page').style.display = 'none';
             document.getElementById('final-result-page').style.display = 'block';
             document.getElementById('final-score').textContent = score;
@@ -702,7 +701,13 @@
                 displayQuestion();
             });
 
-            exitBtn.addEventListener('click', showEnergyPage);
+            // 修改后的退出按钮点击事件
+            exitBtn.addEventListener('click', async () => {
+                // 上传数据到后台
+                await saveToLeanCloud();
+                // 跳转到能量汇集页面
+                showEnergyPage();
+            });
 
             // 点击树木显示最终结果
             energyTree.addEventListener('click', showFinalResult);
