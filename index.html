@@ -642,23 +642,6 @@
             collectEnergies();
         }
 
-        // 新增数据保存函数
-                async function saveResult(birthday, energy) {
-            try {
-                const Result = AV.Object.extend('Result');
-                const result = new Result();
-                await result.save({
-                    birthday: userBirthday,
-                    energy: score/10,
-                    timestamp: new Date()
-                });
-            } catch (error) {
-                console.error("保存失败:", error);
-                alert('成绩保存失败，请检查网络');
-            }
-        }
-
-
         // 修改后的最终结果展示函数
         async function showFinalResult() {
             document.getElementById('energy-page').style.display = 'none';
@@ -704,13 +687,29 @@
                 displayQuestion();
             });
 
-            // 修改后的退出按钮点击事件
-            exitBtn.addEventListener('click', async () => {
+     // 修改后的退出按钮点击事件
+exitBtn.addEventListener('click', async () => {
+    // 上传数据到后台（修正函数名和参数）
+    await saveResult(userBirthday, score);
+    // 跳转到能量汇集页面
+    showEnergyPage();
+});
 
-                // 跳转到能量汇集页面
-                showEnergyPage();
-            });
-
+// 数据保存函数（保持原函数不变）
+async function saveResult(birthday, energy) {
+    try {
+        const Result = AV.Object.extend('Result');
+        const result = new Result();
+        await result.save({
+            birthday: birthday,
+            energy: energy/10,  // 存储实际答对题目数
+            timestamp: new Date()
+        });
+    } catch (error) {
+        console.error("保存失败:", error);
+        alert('成绩保存失败，请检查网络');
+    }
+}
             // 点击树木显示最终结果
             energyTree.addEventListener('click', showFinalResult);
 
