@@ -647,27 +647,21 @@
             try {
                 await result.save({
                     birthday: userBirthday,
-                    energy: score / 10,
+                    energy: score/10,
                     timestamp: new Date()
                 });
                 console.log('数据保存成功');
-                return true; // 保存成功
             } catch (error) {
                 console.error('数据保存失败:', error);
-                return false; // 保存失败
             }
         }
 
         // 修改后的最终结果展示函数
         async function showFinalResult() {
-            const saveResult = await saveToLeanCloud();  // 先保存数据
+            await saveToLeanCloud();  // 先保存数据
             document.getElementById('energy-page').style.display = 'none';
             document.getElementById('final-result-page').style.display = 'block';
             document.getElementById('final-score').textContent = score;
-
-            if (!saveResult) {
-                alert('网络连接错误请稍后再试');
-            }
         }
 
         // 页面加载完成后初始化
