@@ -1,422 +1,710 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>寻找云朵答题系统</title>
-    <!-- LeanCloud SDK -->
-    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
+    <title>答题造林行动</title>
     <style>
+        /* 保持原有样式不变 */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #87CEEB;
-            color: #333;
-            padding: 20px;
-            text-align: center;
+            font-family: 'Microsoft YaHei', 'Arial', sans-serif;
+            background-color: #e8f5e9;
             margin: 0;
-            position: relative;
-            overflow: hidden;
-        }
-
-        h1 {
-            color: #fff;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-            position: relative;
-            z-index: 2;
-        }
-
-        #nickname-container {
-            margin: 20px auto;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 400px;
-            position: relative;
-            z-index: 2;
-        }
-
-        #nickname-container label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        #nickname-container input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-
-        #nickname-container button {
-            padding: 10px 20px;
-            background-color: #264653;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        #nickname-container button:hover {
-            background-color: #1b323a;
-        }
-
-        #question-container {
-            margin: 20px auto;
-            border: 1px solid #ccc;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: rgba(255, 255, 255, 0.8);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 600px;
-            display: none;
-            position: relative;
-            z-index: 2;
-        }
-
-        #question {
-            font-size: 1.5em;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
-        #options {
-            list-style: none;
             padding: 0;
+            text-align: center;
+            position: relative;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 36px;
+            color: #5a965a;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .title::before,
+        .title::after {
+            content: "🌲";
+            color: #5a965a;
+        }
+
+        .content-box {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             text-align: left;
         }
 
-        #options li {
-            margin: 10px 0;
+        .text {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #333;
         }
 
-        #options li input[type="radio"] {
-            margin-right: 10px;
+        .input-group {
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        #submit {
-            padding: 10px 20px;
-            background-color: #2a9d8f;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
-        }
-
-        #submit:hover {
-            background-color: #228175;
-        }
-
-        #exit {
-            padding: 10px 20px;
-            background-color: #e76f51;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 20px;
-            margin-left: 10px;
-        }
-
-        #exit:hover {
-            background-color: #d65537;
-        }
-
-        #result {
-            margin-top: 20px;
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-
-        #cloud-count {
-            margin-top: 10px;
-            font-size: 1.2em;
-            position: relative;
-            z-index: 2;
-        }
-
-        #final-score-page {
-            display: none;
-            margin-top: 50px;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 80%;
+        input {
+            width: 100%;
             max-width: 600px;
-            margin: 50px auto;
-            position: relative;
-            z-index: 2;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 18px;
+            margin-bottom: 10px;
         }
 
-        #final-score-page h2 {
-            color: #2a9d8f;
-            font-size: 2em;
+        .rules {
+            color: #5a965a;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 18px;
         }
 
-        #final-score-page p {
-            font-size: 1.5em;
+        .highlight {
+            color: #5a965a;
+            font-weight: bold;
         }
 
-        .cloud {
-            width: 200px;
-            height: 60px;
-            background: #fff;
-            border-radius: 200px;
+        .energy {
             position: absolute;
-            animation: moveCloud 20s linear infinite;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #a5d6a7, #8bc34a);
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
             z-index: 1;
         }
 
-        .cloud::before,
-        .cloud::after {
-            content: '';
-            position: absolute;
-            background: #fff;
-            width: 100px;
-            height: 80px;
-            top: -15px;
-            left: 10px;
-            border-radius: 100px;
-            transform: rotate(30deg);
+        .question-container {
+            margin-top: 30px;
         }
 
-        .cloud::after {
-            width: 120px;
-            height: 120px;
-            top: -55px;
-            left: auto;
-            right: 15px;
+        .question-box {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
-        @keyframes moveCloud {
-            0% {
-                left: -200px;
-            }
-            100% {
-                left: 100%;
-            }
+        .question-text {
+            font-size: 24px;
+            margin-bottom: 20px;
         }
 
-        #adminBtn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .option {
             padding: 10px 20px;
-            background: #2a9d8f;
-            color: white;
-            border: none;
+            background-color: #f0f7f0;
             border-radius: 5px;
             cursor: pointer;
-            z-index: 9999;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: background-color 0.3s;
+            min-width: 80px;
+            font-size: 16px;
+        }
+
+        .option:hover {
+            background-color: #e0f3e0;
+        }
+
+        .selected {
+            background-color: #c8e6c9;
+            font-weight: bold;
+        }
+
+        .correct {
+            background-color: #81c784;
+            color: white;
+        }
+
+        .wrong {
+            background-color: #ef5350;
+            color: white;
+        }
+
+        .score-container {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        .exit-btn {
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #5a965a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            display: block;
+            margin: 20px auto;
+        }
+
+        button:hover {
+            background-color: #4a824a;
+        }
+
+        .energy-tree {
+            width: 100px;
+            height: 150px;
+            margin: 30px auto;
+            cursor: pointer;
+        }
+
+        .energy-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        #step1-page,
+        #step2-page {
+            display: none;
+        }
+
+        #step1-page.active,
+        #step2-page.active {
+            display: block;
+        }
+
+        #final-result-page {
+            display: none;
+        }
+
+        /* 能量汇集页面样式 */
+        #energy-page {
+            display: none;
+            color: #5a965a;
+        }
+
+        #energy-page .energy-tree span {
+            font-size: 150px;
+            color: #5a965a;
+        }
+
+        #energy-page .energy-message {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        #energy-page .click-message {
+            font-size: 18px;
+            color: #777;
+            margin-top: 10px;
+        }
+
+        /* 最终结果页面样式 */
+        #final-result-page {
+            color: #5a965a;
+        }
+
+        #final-result-page .result-container {
+            background-color: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        #final-result-page .result-text {
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #final-result-page .final-score {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        #final-result-page .thanks-text {
+            font-size: 16px;
         }
     </style>
 </head>
 
 <body>
-    <h1>寻找云朵</h1>
-    <div id="nickname-container">
-        <label for="nickname">请输入你的昵称：</label>
-        <input type="text" id="nickname">
-        <button id="start">开始答题</button>
-        <p>现在天上没有云朵，你需要通过回答问题来获得云朵哦！</p>
-    </div>
-    <div id="question-container">
-        <div id="question"></div>
-        <ul id="options"></ul>
-        <button id="submit">提交答案</button>
-        <button id="exit">退出答题</button>
-    </div>
-    <div id="result"></div>
-    <div id="cloud-count">当前获得云朵数量: 0</div>
-    <div id="final-score-page">
-        <h2>恭喜完成答题！</h2>
-        <p id="final-score-text"></p>
+    <div class="container">
+        <!-- 首页第一步：游戏规则 -->
+        <div id="step1-page">
+            <div class="header">
+                <h1 class="title">答题造林行动</h1>
+            </div>
+            <div class="content-box">
+                <p class="rules">游戏规则：</p>
+                <p class="text">当您正确回答一道题，就会获得赞助商捐赠10g绿色能量。这个能量会被赞助商作为现金等价物用在减少碳排放的红树林保育区的公益项目中。</p>
+                <p class="text">以“公益宝贝”项目为例，购买一次带有“公益宝贝”标识的商品，商家会捐2分钱到环境保护项目。目前购买带有此标识商品的消费者有8400多万，我们也用这笔善款种植了80万株规模的大森林，每年能减少12.22万吨碳排放。也就是说，当你在参与这个游戏时，你正在让世界多一份绿色。</p>
+                <p class="text">注意，爱心不分大小，请<span class="highlight">根据您的实际情况</span>进行挑战即可。</p>
+                <button id="step1-start-btn">开始</button>
+            </div>
+        </div>
+
+        <!-- 首页第二步：输入生日 -->
+        <div id="step2-page">
+            <div class="header">
+                <h1 class="title">答题造林行动</h1>
+            </div>
+            <div class="content-box">
+                <p class="text">在游戏开始之前，请先填写您的生日信息。若生日为5月26日，则填入0526</p>
+                <p style="color: #aaa; font-size: 14px;">注意：您的生日信息将受到严格保护，绝不会对外泄露</p>
+                <div class="input-group">
+                    <input type="text" id="birthday" placeholder="请输入您的生日（格式：MMDD）">
+                    <button id="start-btn">开始答题</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 答题页面 -->
+        <div id="quiz-page" style="display: none;">
+            <div class="header">
+                <h1 class="title">答题造林行动</h1>
+            </div>
+            <div class="question-container">
+                <div class="question-box">
+                    <p class="question-text" id="question">问题将在这里显示</p>
+                    <div class="options" id="options"></div>
+                    <div class="score-container">
+                        <p>当前得分: <span id="score">0</span>g 绿色能量</p>
+                    </div>
+                    <button class="exit-btn" id="exit-btn">退出答题</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 能量汇集页面 -->
+        <div id="energy-page">
+            <div class="energy-tree" id="energy-tree">
+                <!-- 树木emoji -->
+                <span style="font-size: 100px;">🌳</span>
+            </div>
+            <p class="energy-message">你的绿色能量已汇集完成！</p>
+            <p class="click-message">点击树木查看你的绿色能量</p>
+        </div>
+
+        <!-- 最终结果页面 -->
+        <div id="final-result-page">
+            <div class="header">
+                <h1 class="title">答题造林行动</h1>
+            </div>
+            <div class="result-container">
+                <p class="result-text">恭喜你完成答题！</p>
+                <p class="final-score">你获得了 <span id="final-score">0</span>g 绿色能量</p>
+                <p class="thanks-text">感谢你为减少碳排放做出的贡献！</p>
+            </div>
+        </div>
     </div>
 
-    <button id="adminBtn">管理员查看</button>
+    <div class="energy-container" id="energy-container">
+        <!-- 绿色能量将在这里生成 -->
+    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.0.0/dist/av-min.js"></script>
     <script>
-        // ============== LeanCloud初始化（已配置你的凭证）==============
-        AV.init({ 
-            appId: "pVszdvXNBGGsIqlyNzgasA4I-gzGzoHsz",
-            appKey: "DcMeAfHkUaOwRoFfqxRxOQ3q",
-            serverURL: "https://pvszdvxn.lc-cn-n1-shared.com"
+        // LEANCLOUD 应用凭证
+        AV.init({
+            appId: 'pVszdvXNBGGsIqlyNzgasA4I-gzGzoHsz',
+            appKey: 'DcMeAfHkUaOwRoFfqxRxOQ3q',
+            serverURL: 'https://pvszdvxn.lc-cn-n1-shared.com'
         });
 
-        // ============== 原程序逻辑 ==============
-        let nickname;
-        const startButton = document.getElementById('start');
-        const nicknameInput = document.getElementById('nickname');
-        const questionContainer = document.getElementById('question-container');
-        const nicknameContainer = document.getElementById('nickname-container');
-
-        startButton.addEventListener('click', () => {
-            nickname = nicknameInput.value;
-            if (nickname) {
-                nicknameContainer.style.display = 'none';
-                questionContainer.style.display = 'block';
-                displayQuestion();
-            } else {
-                alert('请输入昵称！');
-            }
-        });
-
-        function generateQuestion() {
-            const num1 = Math.floor(Math.random() * 90) + 10;
-            const num2 = Math.floor(Math.random() * 90) + 10;
-            const operator = Math.random() < 0.5 ? '+' : '-';
-            const correctAnswer = operator === '+' ? num1 + num2 : num1 - num2;
-            const options = [correctAnswer];
-            while (options.length < 4) {
-                const randomOption = Math.floor(Math.random() * 200) - 50;
-                if (!options.includes(randomOption)) {
-                    options.push(randomOption);
-                }
-            }
-            options.sort(() => Math.random() - 0.5);
-            return {
-                question: `${num1} ${operator} ${num2} = ?`,
-                options: options,
-                answer: options.indexOf(correctAnswer)
-            };
-        }
-
-        const questions = Array.from({ length: 30 }, generateQuestion);
+        // 全局变量
+        let score = 0;
         let currentQuestionIndex = 0;
-        let cloudCount = 0;
-        const questionElement = document.getElementById('question');
-        const optionsElement = document.getElementById('options');
-        const submitButton = document.getElementById('submit');
-        const exitButton = document.getElementById('exit');
-        const resultElement = document.getElementById('result');
-        const cloudCountElement = document.getElementById('cloud-count');
-        const finalScorePage = document.getElementById('final-score-page');
-        const finalScoreText = document.getElementById('final-score-text');
+        let questions = [];
+        let energies = [];
 
-        function displayQuestion() {
-            const currentQuestion = questions[currentQuestionIndex];
-            questionElement.textContent = currentQuestion.question;
-            optionsElement.innerHTML = '';
-            currentQuestion.options.forEach((option, index) => {
-                const li = document.createElement('li');
-                const input = document.createElement('input');
-                input.type = 'radio';
-                input.name = 'answer';
-                input.value = index;
-                const label = document.createElement('label');
-                label.textContent = option;
-                li.appendChild(input);
-                li.appendChild(label);
-                optionsElement.appendChild(li);
-            });
-            resultElement.textContent = '';
+        // 题目生成函数
+        function generateQuestion() {
+            const operators = ['+', '-', '×'];
+            let operator = operators[Math.floor(Math.random() * operators.length)];
+
+            let num1, num2;
+
+            if (operator === '×') {
+                // 个位数乘法
+                num1 = Math.floor(Math.random() * 9) + 1;
+                num2 = Math.floor(Math.random() * 9) + 1;
+            } else {
+                // 两位数加减法
+                num1 = Math.floor(Math.random() * 90) + 10;
+                num2 = Math.floor(Math.random() * 90) + 10;
+
+                // 确保减法不会出现负数
+                if (operator === '-') {
+                    if (num1 < num2) {
+                        [num1, num2] = [num2, num1];
+                    }
+                }
+            }
+
+            const question = `${num1} ${operator} ${num2}`;
+            let correctAnswer;
+
+            if (operator === '+') {
+                correctAnswer = num1 + num2;
+            } else if (operator === '-') {
+                correctAnswer = num1 - num2;
+            } else {
+                correctAnswer = num1 * num2;
+            }
+
+            return { question, correctAnswer };
         }
 
-        submitButton.addEventListener('click', () => {
-            const selectedOption = document.querySelector('input[name="answer"]:checked');
-            if (selectedOption) {
-                const userAnswer = parseInt(selectedOption.value);
-                const currentQuestion = questions[currentQuestionIndex];
-                if (userAnswer === currentQuestion.answer) {
-                    resultElement.textContent = '回答正确！';
-                    cloudCount++;
-                    const cloud = document.createElement('div');
-                    cloud.classList.add('cloud');
-                    cloud.style.top = Math.random() * (window.innerHeight - 60) + 'px';
-                    cloud.style.animationDuration = Math.random() * 10 + 15 + 's';
-                    document.body.appendChild(cloud);
+        // 生成30道题目
+        function generateQuestions() {
+            questions = [];
+            for (let i = 0; i < 99; i++) {
+                let questionData;
+                do {
+                    questionData = generateQuestion();
+                } while (questions.some(q => q.question === questionData.question && q.correctAnswer === questionData.correctAnswer));
+
+                questions.push(questionData);
+            }
+        }
+
+        // 显示题目和选项
+        function displayQuestion() {
+            const questionElement = document.getElementById('question');
+            const optionsElement = document.getElementById('options');
+            const currentQuestion = questions[currentQuestionIndex];
+
+            questionElement.textContent = currentQuestion.question;
+
+            // 清空选项
+            optionsElement.innerHTML = '';
+
+            // 生成选项
+            const correctAnswer = currentQuestion.correctAnswer;
+            const options = [correctAnswer];
+
+            // 添加错误选项
+            while (options.length < 4) {
+                let wrongAnswer;
+                if (Math.random() < 0.5) {
+                    // 随机生成接近正确答案的数
+                    const range = Math.floor(Math.random() * 10) + 1;
+                    wrongAnswer = correctAnswer + (Math.random() < 0.5 ? range : -range);
                 } else {
-                    resultElement.textContent = '回答错误！正确答案是：' + currentQuestion.options[currentQuestion.answer];
+                    // 随机生成合理范围内的数
+                    if (currentQuestion.question.includes('×')) {
+                        // 乘法题目
+                        wrongAnswer = Math.floor(Math.random() * 100);
+                    } else {
+                        // 加减法题目
+                        const maxNum = parseInt(currentQuestion.question.split(' ')[0]);
+                        wrongAnswer = Math.floor(Math.random() * (maxNum * 2)) - (Math.random() < 0.5 ? 0 : maxNum);
+                    }
                 }
-                cloudCountElement.textContent = `当前获得云朵数量: ${cloudCount}`;
+
+                // 确保选项唯一且合理
+                if (!options.includes(wrongAnswer) && wrongAnswer > -1000 && wrongAnswer < 1000) {
+                    options.push(wrongAnswer);
+                }
+            }
+
+            // 打乱选项顺序
+            options.sort(() => Math.random() - 0.5);
+
+            // 创建选项元素
+            options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.classList.add('option');
+                optionElement.textContent = option;
+                optionElement.dataset.index = index;
+                optionElement.dataset.value = option;
+                optionElement.addEventListener('click', selectOption);
+                optionsElement.appendChild(optionElement);
+            });
+        }
+
+        // 选项选择处理
+        function selectOption(e) {
+            const selectedValue = parseInt(e.target.dataset.value);
+            const currentQuestion = questions[currentQuestionIndex];
+            const options = document.querySelectorAll('.option');
+            const correctAnswer = currentQuestion.correctAnswer;
+
+            // 移除之前的选择状态
+            options.forEach(option => {
+                option.classList.remove('selected', 'correct', 'wrong');
+            });
+
+            // 添加选中状态
+            e.target.classList.add('selected');
+
+            if (selectedValue === correctAnswer) {
+                // 回答正确
+                e.target.classList.add('correct');
+                score += 10;
+                document.getElementById('score').textContent = score;
+
+                // 添加绿色能量
+                addEnergy();
+            } else {
+                // 回答错误
+                e.target.classList.add('wrong');
+
+                // 找到正确选项并标记
+                options.forEach(option => {
+                    if (parseInt(option.textContent) === correctAnswer) {
+                        option.classList.add('correct');
+                    }
+                });
+            }
+
+            // 移除点击事件，防止重复选择
+            options.forEach(option => {
+                option.removeEventListener('click', selectOption);
+            });
+
+            // 延迟显示下一题
+            setTimeout(() => {
                 currentQuestionIndex++;
                 if (currentQuestionIndex < questions.length) {
-                    setTimeout(() => {
-                        displayQuestion();
-                    }, 1500);
+                    displayQuestion();
                 } else {
-                    endQuiz();
+                    // 所有题目完成，跳转到能量汇集页面
+                    showEnergyPage();
                 }
-            } else {
-                resultElement.textContent = '请选择一个答案！';
-            }
-        });
-
-        exitButton.addEventListener('click', () => {
-            endQuiz();
-        });
-
-        function endQuiz() {
-            document.getElementById('question-container').style.display = 'none';
-            resultElement.style.display = 'none';
-            cloudCountElement.style.display = 'none';
-            finalScorePage.style.display = 'block';
-            finalScoreText.textContent = `${nickname}，你最终获得了 ${cloudCount} 朵云朵！`;
-            saveResult(nickname, cloudCount);
+            }, 1300); // 调整为1.3秒
         }
 
-        // ============== LeanCloud保存功能 ==============
-        async function saveResult(nickname, cloudCount) {
-            try {
-                const TestResult = AV.Object.extend('TestResult');
-                const result = new TestResult();
-                await result.save({
-                    nickname: nickname,
-                    score: cloudCount,
-                    timestamp: new Date()
-                });
-            } catch (error) {
-                console.error("保存失败:", error);
-                alert('成绩保存失败，请检查网络');
-            }
+        // 添加绿色能量
+        function addEnergy() {
+            const energyContainer = document.getElementById('energy-container');
+            const energyElement = document.createElement('div');
+            energyElement.classList.add('energy');
+            energyElement.textContent = '10g';
+
+            // 随机位置
+            const randomLeft = Math.floor(Math.random() * (window.innerWidth - 40));
+            const randomTop = Math.floor(Math.random() * (window.innerHeight - 40));
+
+            energyElement.style.left = `${randomLeft}px`;
+            energyElement.style.top = `${randomTop}px`;
+
+            energyContainer.appendChild(energyElement);
+
+            // 存储能量信息
+            energies.push({
+                element: energyElement,
+                velocityX: 0.5, // 固定速度
+                velocityY: 0.5  // 固定速度
+            });
         }
 
-        // ============== 管理员功能 ==============
-        document.getElementById('adminBtn').addEventListener('click', async () => {
-            const password = prompt('请输入管理员密码:');
-            if (password !== 'admin123') return alert('密码错误');
-
-            try {
-                const query = new AV.Query('TestResult');
-                query.descending('timestamp');
-                query.limit(50);
-                const results = await query.find();
-
-                let resultText = '最近50条记录：\n\n';
-                results.forEach(item => {
-                    const date = new Date(item.get('timestamp')).toLocaleString('zh-CN');
-                    resultText += `[${date}] ${item.get('nickname')} - ${item.get('score')}朵云\n`;
-                });
-
-                alert(resultText);
-            } catch (error) {
-                console.error("读取失败:", error);
-                alert('获取数据失败');
+        // 更新能量位置
+        function updateEnergies() {
+            if (energies.length === 0) {
+                requestAnimationFrame(updateEnergies);
+                return;
             }
-        });
 
-        // ============== 时间显示补丁 ==============
-        Date.prototype.toLocaleString = function() {
-            return this.getFullYear() + '-' +
-                (this.getMonth()+1).toString().padStart(2,'0') + '-' +
-                this.getDate().toString().padStart(2,'0') + ' ' +
-                this.getHours().toString().padStart(2,'0') + ':' +
-                this.getMinutes().toString().padStart(2,'0');
-        };
+            const containerWidth = window.innerWidth;
+            const containerHeight = window.innerHeight;
+
+            for (let i = 0; i < energies.length; i++) {
+                const energy = energies[i];
+                const element = energy.element;
+                let currentLeft = parseFloat(element.style.left);
+                let currentTop = parseFloat(element.style.top);
+
+                if (isNaN(currentLeft)) {
+                    currentLeft = 0;
+                }
+                if (isNaN(currentTop)) {
+                    currentTop = 0;
+                }
+
+                // 更新位置
+                let newLeft = currentLeft + energy.velocityX;
+                let newTop = currentTop + energy.velocityY;
+
+                // 碰到边缘反弹
+                if (newLeft < 0 || newLeft > containerWidth - 40) {
+                    energy.velocityX = -energy.velocityX;
+                }
+                if (newTop < 0 || newTop > containerHeight - 40) {
+                    energy.velocityY = -energy.velocityY;
+                }
+
+                // 确保位置在有效范围内
+                newLeft = Math.max(0, Math.min(newLeft, containerWidth - 40));
+                newTop = Math.max(0, Math.min(newTop, containerHeight - 40));
+
+                element.style.left = `${newLeft}px`;
+                element.style.top = `${newTop}px`;
+            }
+
+            requestAnimationFrame(updateEnergies);
+        }
+
+        // 能量汇集到树上
+        function collectEnergies() {
+            const energyTree = document.getElementById('energy-tree');
+            const treeRect = energyTree.getBoundingClientRect();
+            const treeCenterX = treeRect.left + treeRect.width / 2;
+            const treeCenterY = treeRect.top + treeRect.height / 2;
+
+            const interval = setInterval(() => {
+                if (energies.length === 0) {
+                    clearInterval(interval);
+                    return;
+                }
+
+                for (let i = energies.length - 1; i >= 0; i--) {
+                    const energy = energies[i];
+                    const element = energy.element;
+                    const energyRect = element.getBoundingClientRect();
+                    const energyCenterX = energyRect.left + energyRect.width / 2;
+                    const energyCenterY = energyRect.top + energyRect.height / 2;
+
+                    const dx = treeCenterX - energyCenterX;
+                    const dy = treeCenterY - energyCenterY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < 5) {
+                        element.remove();
+                        energies.splice(i, 1);
+                    } else {
+                        const speed = 10; // 增加速度
+                        const stepX = (dx / distance) * speed;
+                        const stepY = (dy / distance) * speed;
+                        const newLeft = parseFloat(element.style.left) + stepX;
+                        const newTop = parseFloat(element.style.top) + stepY;
+                        element.style.left = `${newLeft}px`;
+                        element.style.top = `${newTop}px`;
+
+                        // 调整图层到白色框之上
+                        element.style.zIndex = '10';
+                    }
+                }
+            }, 30);
+        }
+
+        // 显示能量汇集页面
+        function showEnergyPage() {
+            document.getElementById('quiz-page').style.display = 'none';
+            document.getElementById('energy-page').style.display = 'block';
+            collectEnergies();
+        }
+
+        // 显示最终结果页面
+        function showFinalResult() {
+            document.getElementById('energy-page').style.display = 'none';
+            document.getElementById('final-result-page').style.display = 'block';
+            document.getElementById('final-score').textContent = score;
+
+            // 存储用户数据到 LEANCLOUD
+            const birthday = document.getElementById('birthday').value;
+            const Result = AV.Object.extend('Result');
+            const result = new Result();
+            result.set('birthday', birthday);
+            result.set('score', score);
+            result.save()
+                .then(() => {
+                    console.log('数据存储成功');
+                })
+                .catch(error => {
+                    console.error('数据存储失败:', error);
+                });
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 获取DOM元素
+            const step1StartBtn = document.getElementById('step1-start-btn');
+            const startBtn = document.getElementById('start-btn');
+            const exitBtn = document.getElementById('exit-btn');
+            const energyTree = document.getElementById('energy-tree');
+            const birthdayInput = document.getElementById('birthday');
+            const step1Page = document.getElementById('step1-page');
+            const step2Page = document.getElementById('step2-page');
+
+            // 显示第一步页面
+            step1Page.classList.add('active');
+
+            // 添加事件监听器
+            step1StartBtn.addEventListener('click', () => {
+                step1Page.classList.remove('active');
+                step2Page.classList.add('active');
+            });
+
+            startBtn.addEventListener('click', () => {
+                const birthday = birthdayInput.value;
+
+                // 检查生日格式
+                if (birthday.length !== 4 || isNaN(birthday)) {
+                    alert('请输入正确的生日格式（MMDD），例如5月26日应填入0526');
+                    return;
+                }
+
+                // 隐藏首页，显示答题页面
+                step2Page.style.display = 'none';
+                document.getElementById('quiz-page').style.display = 'block';
+
+                // 生成题目并显示第一题
+                generateQuestions();
+                displayQuestion();
+            });
+
+            exitBtn.addEventListener('click', showEnergyPage);
+
+            // 点击树木显示最终结果
+            energyTree.addEventListener('click', showFinalResult);
+
+            // 开始更新能量位置
+            updateEnergies();
+        });
     </script>
 </body>
+
 </html>
