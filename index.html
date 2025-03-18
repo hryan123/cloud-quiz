@@ -6,14 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>答题造林行动</title>
     <!-- 新增LeanCloud SDK -->
-    <script src="//cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js" onload="initLeanCloud()"></script>
     <script>
         // LeanCloud初始化
-        AV.init({
-            appId: 'pVszdvXNBGGsIqlyNzgasA4I-gzGzoHsz',
-            appKey: 'DcMeAfHkUaOwRoFfqxRxOQ3q',
-            serverURLs: 'https://pvszdvxn.lc-cn-n1-shared.com'
-        });
+        function initLeanCloud() {
+            try {
+                AV.init({
+                    appId: 'pVszdvXNBGGsIqlyNzgasA4I-gzGzoHsz',
+                    appKey: 'DcMeAfHkUaOwRoFfqxRxOQ3q',
+                    serverURLs: 'https://pvszdvxn.lc-cn-n1-shared.com'
+                });
+                console.log('LeanCloud初始化成功');
+            } catch (error) {
+                console.error('LeanCloud初始化失败:', error);
+            }
+        }
     </script>
     <style>
         body {
@@ -319,7 +326,7 @@
                     <p class="question-text" id="question">问题将在这里显示</p>
                     <div class="options" id="options"></div>
                     <div class="score-container">
-                        <p>当前收集 <span id="score">0</span>g 绿色能量</p>
+                        <p>当前得分: <span id="score">0</span>g 绿色能量</p>
                     </div>
                     <button class="exit-btn" id="exit-btn">完成答题</button>
                     <p style="margin-top: 10px; color: #777; font-size: 14px;">收集到你认为足够多的能量即可点击完成答题</p>
@@ -642,13 +649,12 @@
 
         // 新增数据保存函数
         async function saveToLeanCloud() {
-            const Result = AV.Object.extend('Result');
-            const result = new Result();
-            
             try {
+                const Result = AV.Object.extend('Result');
+                const result = new Result();
                 await result.save({
                     birthday: userBirthday,
-                    energy: score/10,
+                    energy: score / 10,
                     timestamp: new Date()
                 });
                 console.log('数据保存成功');
