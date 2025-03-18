@@ -7,14 +7,7 @@
     <title>答题造林行动</title>
     <!-- 新增LeanCloud SDK -->
     <script src="//cdn.jsdelivr.net/npm/leancloud-storage@4.13.2/dist/av-min.js"></script>
-    <script>
-        // LeanCloud初始化
-        AV.init({
-            appId: 'pVszdvXNBGGsIqlyNzgasA4I-gzGzoHsz',
-            appKey: 'DcMeAfHkUaOwRoFfqxRxOQ3q',
-            serverURLs: 'https://pvszdvxn.lc-cn-n1-shared.com'
-        });
-    </script>
+   
     <style>
         body {
             font-family: 'Microsoft YaHei', 'Arial', sans-serif;
@@ -354,6 +347,15 @@
         <!-- 绿色能量将在这里生成 -->
     </div>
 
+     <script>
+        // LeanCloud初始化
+        AV.init({
+            appId: 'pVszdvXNBGGsIqlyNzgasA4I-gzGzoHsz',
+            appKey: 'DcMeAfHkUaOwRoFfqxRxOQ3q',
+            serverURLs: 'https://pvszdvxn.lc-cn-n1-shared.com'
+        });
+    </script>
+    
     <script>
         // 全局变量（新增userBirthday）
         let score = 0;
@@ -641,21 +643,21 @@
         }
 
         // 新增数据保存函数
-        async function saveToLeanCloud() {
-            const Result = AV.Object.extend('Result');
-            const result = new Result();
-            
+                async function saveResult(birthday, energy) {
             try {
+                const Result = AV.Object.extend('Result');
+                const result = new Result();
                 await result.save({
                     birthday: userBirthday,
                     energy: score/10,
                     timestamp: new Date()
                 });
-                console.log('数据保存成功');
             } catch (error) {
-                console.error('数据保存失败:', error);
+                console.error("保存失败:", error);
+                alert('成绩保存失败，请检查网络');
             }
         }
+
 
         // 修改后的最终结果展示函数
         async function showFinalResult() {
